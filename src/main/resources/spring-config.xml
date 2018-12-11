@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spring:beans xmlns:spring="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <spring:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <spring:property name="location" value="application.properties"/>
+    </spring:bean>
+    <spring:bean id="sparkPostClient" class="com.sparkpost.Client">
+        <spring:constructor-arg name="key" value="${api.key}"/>
+    </spring:bean>
+
+    <spring:bean id="mailService" class="lv.inache.emailsender.EMailService">
+        <spring:constructor-arg name="client" ref="sparkPostClient"/>
+
+        <spring:property name="fromEmail" value="${from.email}"/>
+    </spring:bean>
+</spring:beans>
