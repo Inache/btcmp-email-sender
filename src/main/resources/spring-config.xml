@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <spring:beans xmlns:spring="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-       http://www.springframework.org/schema/beans
-       http://www.springframework.org/schema/beans/spring-beans.xsd">
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:int="http://www.springframework.org/schema/integration"
+              xmlns:int-http="http://www.springframework.org/schema/integration/http"
+              xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/integration
+            http://www.springframework.org/schema/integration/spring-integration.xsd
+            http://www.springframework.org/schema/integration/http
+            http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
 
+    <int:channel id="requestChannel" />
+    <int:channel id="responseChannel" />
 
-    <spring:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <spring:property name="location" value="application.properties"/>
-    </spring:bean>
-    <spring:bean id="sparkPostClient" class="com.sparkpost.Client">
-        <spring:constructor-arg name="key" value="${api.key}"/>
-    </spring:bean>
+    <int:service-activator id="basicMessageProcessor"
+                           ref="messageProcessor"
+                           method="process"
+                           input-channel="requestChannel"
+                           output-channel="responseChannel" >
+    </int:service-activator>
 
-    <spring:bean id="mailService" class="lv.inache.emailsender.EMailService">
-        <spring:constructor-arg name="client" ref="sparkPostClient"/>
-
-        <spring:property name="fromEmail" value="${from.email}"/>
-    </spring:bean>
+    <int-http:inbound-gateway id="testGateWay"
+                              payload-expression="#requestParams.name"
+                              supported-methods="GET"
+                              request-channel="requestChannel"
+                              reply-channel="responseChannel"
+                              path="/test">
+        <int-http:header name="from" expression="#requestParams.from"/>
+        <int-http:header name="subject" expression="#requestParams.subject"/>
+        <int-http:header name="text" expression="#requestParams.text"/>
+    </int-http:inbound-gateway>
 </spring:beans>
